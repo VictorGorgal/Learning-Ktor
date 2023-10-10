@@ -7,9 +7,9 @@ import org.ktorm.schema.text
 
 data class TestTableEntry(
     val id: Int,
-    val name: String,
-    val email: String,
-    val password: String
+    var name: String,
+    var email: String,
+    var password: String
 )
 
 object TestTableEntities: BaseTable<TestTableEntry>("test_table") {

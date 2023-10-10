@@ -2,7 +2,6 @@ import entities.TestTableEntities
 import entities.TestTableEntry
 import org.ktorm.database.Database
 import org.ktorm.dsl.*
-import org.ktorm.entity.sequenceOf
 import java.lang.Exception
 
 class DatabaseConnection private constructor() {
@@ -50,5 +49,20 @@ class DatabaseConnection private constructor() {
         }
 
         return entries.first()
+    }
+
+    fun updateEntry(entry: TestTableEntry) {
+        database.update(TestTableEntities) {
+            set(it.name, entry.name)
+            set(it.email, entry.email)
+            set(it.password, entry.password)
+            where { it.id eq entry.id }
+        }
+    }
+
+    fun deleteEntry(entry: TestTableEntry) {
+        database.delete(TestTableEntities) {
+            it.id eq entry.id
+        }
     }
 }

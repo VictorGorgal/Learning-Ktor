@@ -3,7 +3,9 @@ import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
-import plugins.configureRouting
+import io.ktor.server.routing.*
+import routes.basicRoutes
+import routes.databaseRoutes
 
 fun main() {
     embeddedServer(
@@ -20,9 +22,9 @@ fun Application.module() {
     }
 
     DatabaseConnection.initDatabase()
-    val databaseConnection = DatabaseConnection.getInstance()
-//    databaseConnection.insertEntry()
-//    println(databaseConnection.getEntryAt(1))
 
-    configureRouting()
+    routing {
+        basicRoutes()
+        databaseRoutes()
+    }
 }
