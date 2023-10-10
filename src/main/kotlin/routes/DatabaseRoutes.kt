@@ -9,8 +9,6 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-val database = DatabaseConnection.getInstance()
-
 fun Route.databaseRoutes() {
     route("/database") {
         getEntries()
@@ -22,6 +20,8 @@ fun Route.databaseRoutes() {
 
 private fun Route.getEntries() {
     get("/{id?}") {
+        val database = DatabaseConnection.getInstance()
+
         val input: String? = call.parameters["id"]
         if (input == null) {
             val entries = database.getEntries()
@@ -46,6 +46,8 @@ private fun Route.getEntries() {
 
 private fun Route.addEntry() {
     post("/") {
+        val database = DatabaseConnection.getInstance()
+
         val entry: TestTableEntry
         try {
             entry = call.receive<TestTableEntry>()
@@ -65,7 +67,9 @@ private fun Route.addEntry() {
 }
 
 private fun Route.updateEntry() {
-    put("/{id}") {
+    put("/{id?}") {
+        val database = DatabaseConnection.getInstance()
+
         val id = call.parameters["id"]?.toIntOrNull()
         if (id == null) {
             call.respond(HttpStatusCode.BadRequest, Response.errorInHeader())
@@ -90,6 +94,21 @@ private fun Route.updateEntry() {
 }
 
 private fun Route.deleteEntry() {
-    delete("/{id}") {
+    delete("/{id?}") {
+        val database = DatabaseConnection.getInstance()
+
+        val id = call.parameters["id"]?.toIntOrNull()
+        if (id == null) {
+            call.respond(HttpStatusCode.BadRequest, Response.errorInHeader())
+            return@delete
+        }
+
+        val rowsEffected = database.deleteEntryAt(id)
+        if (rowsEffected != 1) {
+            call.respond(HttpStatusCode.BadRequest, Response.errorCouldNotFinishOperation())
+            return@delete
+        }
+
+        call.respond(HttpStatusCode.OK, Response.emptySuccess())
     }
 }

@@ -79,4 +79,26 @@ class DatabaseConnection private constructor() {
             it.id eq entry.id
         }
     }
+
+    fun deleteEntryAt(index: Int): Int {
+        return database.delete(TestTableEntities) {
+            it.id eq index
+        }
+    }
+
+    fun doesEmailExists(email: String): Boolean {
+        return getUserByEmail(email) != null
+    }
+
+    fun doesEmailNotExists(email: String): Boolean {
+        return getUserByEmail(email) == null
+    }
+
+    fun getUserByEmail(email: String): TestTableEntry? {
+        return database.from(TestTableEntities)
+            .select()
+            .where { TestTableEntities.email eq email }
+            .map { TestTableEntities.createEntity(it) }
+            .firstOrNull()
+    }
 }
