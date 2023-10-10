@@ -26,14 +26,6 @@ class DatabaseConnection private constructor() {
         }
     }
 
-    fun insertEntry(name: String, email: String, password: String) {
-        database.insert(TestTableEntities) {
-            set(it.name, name)
-            set(it.email, email)
-            set(it.password, password)
-        }
-    }
-
     fun getEntryAt(index: Int): TestTableEntry? {
         val entries = database.from(TestTableEntities)
             .select()
@@ -51,8 +43,30 @@ class DatabaseConnection private constructor() {
         return entries.first()
     }
 
-    fun updateEntry(entry: TestTableEntry) {
-        database.update(TestTableEntities) {
+    fun getEntries(): List<TestTableEntry> {
+        return database.from(TestTableEntities)
+            .select()
+            .map { TestTableEntities.createEntity(it) }
+    }
+
+    fun insertEntry(name: String, email: String, password: String) {
+        database.insert(TestTableEntities) {
+            set(it.name, name)
+            set(it.email, email)
+            set(it.password, password)
+        }
+    }
+
+    fun insertEntry(entry: TestTableEntry): Int {
+        return database.insert(TestTableEntities) {
+            set(it.name, entry.name)
+            set(it.email, entry.email)
+            set(it.password, entry.password)
+        }
+    }
+
+    fun updateEntry(entry: TestTableEntry): Int {
+        return database.update(TestTableEntities) {
             set(it.name, entry.name)
             set(it.email, entry.email)
             set(it.password, entry.password)

@@ -1,12 +1,14 @@
 package entities
 
+import kotlinx.serialization.Serializable
 import org.ktorm.dsl.QueryRowSet
 import org.ktorm.schema.BaseTable
 import org.ktorm.schema.int
 import org.ktorm.schema.text
 
+@Serializable
 data class TestTableEntry(
-    val id: Int,
+    var id: Int = 0,
     var name: String,
     var email: String,
     var password: String

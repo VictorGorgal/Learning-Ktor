@@ -1,32 +1,91 @@
 package routes
 
 import DatabaseConnection
+import responses.Response
+import entities.TestTableEntry
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 val database = DatabaseConnection.getInstance()
 
 fun Route.databaseRoutes() {
     route("/database") {
-        getEntryAt()
+        getEntries()
         addEntry()
         updateEntry()
         deleteEntry()
     }
 }
 
-private fun Route.getEntryAt() {
-    get("/{id}") {
-        val entry = database.getEntryAt(1)
+private fun Route.getEntries() {
+    get("/{id?}") {
+        val input: String? = call.parameters["id"]
+        if (input == null) {
+            val entries = database.getEntries()
+            call.respond(HttpStatusCode.OK, Response.success(entries))
+            return@get
+        }
+
+        val id = input.toIntOrNull()
+        if (id == null) {
+            call.respond(HttpStatusCode.BadRequest, Response.errorInHeader())
+            return@get
+        }
+
+        val entry = database.getEntryAt(id)
+        if (entry == null) {
+            call.respond(HttpStatusCode.NotFound, Response.errorEntryNotFound())
+        }
+
+        call.respond(HttpStatusCode.OK, Response.success(entry))
     }
 }
 
 private fun Route.addEntry() {
-    post("/{id}") {
+    post("/") {
+        val entry: TestTableEntry
+        try {
+            entry = call.receive<TestTableEntry>()
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest, Response.errorInBody())
+            return@post
+        }
+
+        val result = database.insertEntry(entry)
+        if (result != 1) {
+            call.respond(HttpStatusCode.BadRequest, Response.errorCouldNotFinishOperation())
+            return@post
+        }
+
+        call.respond(HttpStatusCode.OK, Response.emptySuccess())
     }
 }
 
 private fun Route.updateEntry() {
     put("/{id}") {
+        val id = call.parameters["id"]?.toIntOrNull()
+        if (id == null) {
+            call.respond(HttpStatusCode.BadRequest, Response.errorInHeader())
+            return@put
+        }
+
+        val entry: TestTableEntry
+        try {
+            entry = call.receive<TestTableEntry>()
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.BadRequest, Response.errorInBody())
+            return@put
+        }
+
+        val result = database.updateEntry(entry)
+        if (result != 1) {
+            call.respond(HttpStatusCode.BadRequest, Response.errorCouldNotFinishOperation())
+        }
+
+        call.respond(HttpStatusCode.OK, Response.emptySuccess())
     }
 }
 
